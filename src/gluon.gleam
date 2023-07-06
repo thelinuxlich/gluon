@@ -4,6 +4,8 @@ import tcp_client.{ClientMessage, Close, ReceiveMessage, SendMessage}
 import gleam/bit_string.{to_string}
 import gleam/string.{drop_left, drop_right}
 import gleam/result.{replace_error, try}
+import helpers.{attempt, generate_regex, replace_with_regex}
+import gleam/int
 
 type Socket =
   #(Subject(ClientMessage), Subject(ClientMessage))
@@ -23,9 +25,9 @@ fn parse_bulk_str_resp(resp: String) {
 }
 
 fn receive(receiver: Subject(ClientMessage)) -> Result(String, String) {
-  use resp <- try(
-    process.receive(receiver, 200)
-    |> replace_error("Failed to receive response."),
+  use resp <- attempt(
+    process.receive(receiver, 200),
+    "Failed to receive response.",
   )
   case resp {
     ReceiveMessage(resp) ->
@@ -40,6 +42,7 @@ pub fn send_command(socket: Socket, command: String) -> Result(String, String) {
   process.send(sender, SendMessage(bit_builder.from_string(command <> "\r\n")))
   use resp <- try(receive(receiver))
   case resp {
+    "$-1" <> _ -> Ok("")
     "$" <> _ -> Ok(parse_bulk_str_resp(resp))
     "*" <> _ -> Ok(parse_bulk_str_resp(resp))
     "+" <> _ -> Ok(parse_str_resp(resp))
@@ -47,6 +50,42 @@ pub fn send_command(socket: Socket, command: String) -> Result(String, String) {
     "-" <> _ -> Error(parse_str_resp(resp))
     _ -> Error("Unknown response: " <> resp)
   }
+}
+
+pub fn get(socket: Socket, key: String) -> Result(String, String) {
+  send_command(socket, "GET " <> key)
+}
+
+pub fn del(socket: Socket, key: String) -> Result(Int, String) {
+  use response <- try(send_command(socket, "DEL " <> key))
+  replace_error(int.parse(response), "Failed to parse response.")
+}
+
+pub fn set(socket: Socket, key: String, value: String) -> Result(String, String) {
+  send_command(socket, "SET " <> key <> " " <> value)
+}
+
+pub fn ping(socket: Socket) -> Result(String, String) {
+  send_command(socket, "PING")
+}
+
+pub fn lpush(socket: Socket, key: String, value: String) -> Result(Int, String) {
+  use response <- try(send_command(socket, "LPUSH " <> key <> " " <> value))
+  replace_error(int.parse(response), "Failed to parse response.")
+}
+
+pub fn llen(socket: Socket, key: String) -> Result(Int, String) {
+  use response <- try(send_command(socket, "LLEN " <> key))
+  replace_error(int.parse(response), "Failed to parse response.")
+}
+
+pub fn lrange(socket: Socket, key: String, start: Int, stop: Int) -> Result(List(String), String) {
+  use response <- try(send_command(socket, "LRANGE " <> key <> " " <> int.to_string(start) <> " " <> int.to_string(stop)))
+  use re <- try(generate_regex("(\\$[0-9]+\r\n)+"))
+  let response = replace_with_regex(response, re, "")
+  response
+    |> string.split("\r\n")
+    |> Ok
 }
 
 pub fn close(socket) {
