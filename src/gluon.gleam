@@ -79,13 +79,23 @@ pub fn llen(socket: Socket, key: String) -> Result(Int, String) {
   replace_error(int.parse(response), "Failed to parse response.")
 }
 
-pub fn lrange(socket: Socket, key: String, start: Int, stop: Int) -> Result(List(String), String) {
-  use response <- try(send_command(socket, "LRANGE " <> key <> " " <> int.to_string(start) <> " " <> int.to_string(stop)))
+pub fn lrange(
+  socket: Socket,
+  key: String,
+  start: Int,
+  stop: Int,
+) -> Result(List(String), String) {
+  use response <- try(send_command(
+    socket,
+    "LRANGE " <> key <> " " <> int.to_string(start) <> " " <> int.to_string(
+      stop,
+    ),
+  ))
   use re <- try(generate_regex("(\\$[0-9]+\r\n)+"))
   let response = replace_with_regex(response, re, "")
   response
-    |> string.split("\r\n")
-    |> Ok
+  |> string.split("\r\n")
+  |> Ok
 }
 
 pub fn close(socket) {

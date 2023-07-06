@@ -1,6 +1,6 @@
 import gleam/result.{replace_error, try}
-import gleam/regex.{Regex,CompileError}
-import gleam/string_builder.{StringBuilder, from_string, to_string}
+import gleam/regex.{CompileError, Regex}
+import gleam/string_builder.{StringBuilder, from_string}
 
 pub fn attempt(
   result: Result(a, e),
@@ -15,11 +15,7 @@ pub fn attempt(
 }
 
 @external(erlang, "erlang_helpers", "regex_replace")
-fn regex_replace(
-  in string: StringBuilder,
-  each pattern: Regex,
-  with substitute: StringBuilder,
-) -> StringBuilder 
+fn regex_replace(in string: StringBuilder, each pattern: Regex, with substitute: StringBuilder) -> StringBuilder
 
 pub fn replace_with_regex(
   in string: String,
@@ -33,9 +29,9 @@ pub fn replace_with_regex(
 }
 
 pub fn generate_regex(pattern: String) -> Result(Regex, String) {
-    let re = regex.from_string(pattern)
-    case re {
-        Ok(regex) -> Ok(regex)
-        Error(CompileError(error, _)) -> Error(error)
-    }
+  let re = regex.from_string(pattern)
+  case re {
+    Ok(regex) -> Ok(regex)
+    Error(CompileError(error, _)) -> Error(error)
+  }
 }
