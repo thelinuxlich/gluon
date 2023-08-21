@@ -24,7 +24,7 @@ pub fn it_sets_a_value_test() {
 
 pub fn it_sets_a_big_value_test() {
   let socket = gluon.open("localhost", 6379)
-  use resp <- try(gluon.set(socket, "foo", repeat("bar",100)))
+  use resp <- try(gluon.set(socket, "foo", repeat("bar", 100)))
   should.equal(resp, "OK")
   use resp <- try(gluon.get(socket, "foo"))
   should.equal(resp, repeat("bar", 100))

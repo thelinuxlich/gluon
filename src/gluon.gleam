@@ -93,9 +93,10 @@ pub fn lrange(
     ),
   ))
   let assert Ok(re) = generate_regex("(\\$[0-9]+\r\n)+")
-  let _ = replace_with_regex(response, re, "")
-  |> string.split("\r\n")
-  |> Ok
+  let _ =
+    replace_with_regex(response, re, "")
+    |> string.split("\r\n")
+    |> Ok
 }
 
 pub fn close(socket) {
