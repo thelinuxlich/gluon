@@ -15,7 +15,11 @@ pub fn attempt(
 }
 
 @external(erlang, "erlang_helpers", "regex_replace")
-fn regex_replace(in string: StringBuilder, each pattern: Regex, with substitute: StringBuilder) -> StringBuilder
+fn regex_replace(
+  in string: StringBuilder,
+  each pattern: Regex,
+  with substitute: StringBuilder,
+) -> StringBuilder
 
 pub fn replace_with_regex(
   in string: String,

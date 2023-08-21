@@ -12,9 +12,11 @@ import glisten/socket.{Socket}
 import glisten/tcp
 
 @external(erlang, "gen_tcp", "connect")
-fn tcp_connect(host host: Charlist, port port: Int, options options: List(
-    Dynamic,
-  )) -> Result(Socket, Nil)
+fn tcp_connect(
+  host host: Charlist,
+  port port: Int,
+  options options: List(Dynamic),
+) -> Result(Socket, Nil)
 
 fn connect(host: String, port: Int) -> Socket {
   let assert Ok(client) =
