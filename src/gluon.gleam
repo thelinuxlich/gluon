@@ -1,10 +1,12 @@
 import gleam/erlang/process.{Subject}
 import gleam/bit_builder
-import internal/tcp_client.{ClientMessage, Close, ReceiveMessage, SendMessage}
+import gluon/internal/tcp_client.{
+  ClientMessage, Close, ReceiveMessage, SendMessage,
+}
 import gleam/bit_string.{to_string}
 import gleam/string.{drop_left, drop_right}
 import gleam/result.{replace_error, try}
-import internal/gluon_utils.{attempt, generate_regex, replace_with_regex}
+import gluon/internal/gluon_utils.{attempt, generate_regex, replace_with_regex}
 import gleam/int
 
 pub type Socket =
