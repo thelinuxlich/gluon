@@ -7,10 +7,10 @@ import gleam/result.{replace_error, try}
 import helpers.{attempt, generate_regex, replace_with_regex}
 import gleam/int
 
-type Socket =
+pub type Socket =
   #(Subject(ClientMessage), Subject(ClientMessage))
 
-pub fn main(host: String, port: Int) {
+pub fn main(host: String, port: Int) -> Socket {
   tcp_client.init(host, port)
 }
 
