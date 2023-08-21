@@ -1,10 +1,10 @@
 import gleam/erlang/process.{Subject}
 import gleam/bit_builder
-import tcp_client.{ClientMessage, Close, ReceiveMessage, SendMessage}
+import internal/tcp_client.{ClientMessage, Close, ReceiveMessage, SendMessage}
 import gleam/bit_string.{to_string}
 import gleam/string.{drop_left, drop_right}
 import gleam/result.{replace_error, try}
-import gluon_utils.{attempt, generate_regex, replace_with_regex}
+import internal/gluon_utils.{attempt, generate_regex, replace_with_regex}
 import gleam/int
 
 pub type Socket =
@@ -20,8 +20,9 @@ fn parse_str_resp(resp: String) {
 }
 
 fn parse_bulk_str_resp(resp: String) {
-  drop_left(resp, 3)
-  |> drop_right(1)
+  let assert Ok(re) = generate_regex("^([0-9]+\r\n){1}")
+  let value = replace_with_regex(resp, re, "")
+  drop_right(value, 1)
 }
 
 fn receive(receiver: Subject(ClientMessage)) -> Result(String, String) {
@@ -42,9 +43,9 @@ pub fn send_command(socket: Socket, command: String) -> Result(String, String) {
   process.send(sender, SendMessage(bit_builder.from_string(command <> "\r\n")))
   use resp <- try(receive(receiver))
   case resp {
-    "$-1" <> _ -> Ok("")
-    "$" <> _ -> Ok(parse_bulk_str_resp(resp))
-    "*" <> _ -> Ok(parse_bulk_str_resp(resp))
+    "$-1" <> _ -> Error("Key not found.")
+    "$" <> resp -> Ok(parse_bulk_str_resp(resp))
+    "*" <> resp -> Ok(parse_bulk_str_resp(resp))
     "+" <> _ -> Ok(parse_str_resp(resp))
     ":" <> _ -> Ok(parse_str_resp(resp))
     "-" <> _ -> Error(parse_str_resp(resp))
@@ -91,9 +92,8 @@ pub fn lrange(
       stop,
     ),
   ))
-  use re <- try(generate_regex("(\\$[0-9]+\r\n)+"))
-  let response = replace_with_regex(response, re, "")
-  response
+  let assert Ok(re) = generate_regex("(\\$[0-9]+\r\n)+")
+  let _ = replace_with_regex(response, re, "")
   |> string.split("\r\n")
   |> Ok
 }
