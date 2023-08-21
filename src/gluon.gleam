@@ -10,7 +10,7 @@ import gleam/int
 pub type Socket =
   #(Subject(ClientMessage), Subject(ClientMessage))
 
-pub fn main(host: String, port: Int) -> Socket {
+pub fn open(host: String, port: Int) -> Socket {
   tcp_client.init(host, port)
 }
 
@@ -53,16 +53,16 @@ pub fn send_command(socket: Socket, command: String) -> Result(String, String) {
 }
 
 pub fn get(socket: Socket, key: String) -> Result(String, String) {
-  send_command(socket, "GET \"" <> key <> "\"")
+  send_command(socket, "GET '" <> key <> "'")
 }
 
 pub fn del(socket: Socket, key: String) -> Result(Int, String) {
-  use response <- try(send_command(socket, "DEL \"" <> key <> "\""))
+  use response <- try(send_command(socket, "DEL '" <> key <> "'"))
   replace_error(int.parse(response), "Failed to parse response.")
 }
 
 pub fn set(socket: Socket, key: String, value: String) -> Result(String, String) {
-  send_command(socket, "SET \"" <> key <> "\" \"" <> value <> "\"")
+  send_command(socket, "SET '" <> key <> "' '" <> value <> "'")
 }
 
 pub fn ping(socket: Socket) -> Result(String, String) {
@@ -70,12 +70,12 @@ pub fn ping(socket: Socket) -> Result(String, String) {
 }
 
 pub fn lpush(socket: Socket, key: String, value: String) -> Result(Int, String) {
-  use response <- try(send_command(socket, "LPUSH \"" <> key <> "\" " <> value))
+  use response <- try(send_command(socket, "LPUSH '" <> key <> "' " <> value))
   replace_error(int.parse(response), "Failed to parse response.")
 }
 
 pub fn llen(socket: Socket, key: String) -> Result(Int, String) {
-  use response <- try(send_command(socket, "LLEN \"" <> key <> "\""))
+  use response <- try(send_command(socket, "LLEN '" <> key <> "'"))
   replace_error(int.parse(response), "Failed to parse response.")
 }
 
@@ -87,7 +87,7 @@ pub fn lrange(
 ) -> Result(List(String), String) {
   use response <- try(send_command(
     socket,
-    "LRANGE \"" <> key <> "\" " <> int.to_string(start) <> " " <> int.to_string(
+    "LRANGE '" <> key <> "' " <> int.to_string(start) <> " " <> int.to_string(
       stop,
     ),
   ))
