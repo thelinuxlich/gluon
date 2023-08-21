@@ -4,7 +4,7 @@ import tcp_client.{ClientMessage, Close, ReceiveMessage, SendMessage}
 import gleam/bit_string.{to_string}
 import gleam/string.{drop_left, drop_right}
 import gleam/result.{replace_error, try}
-import helpers.{attempt, generate_regex, replace_with_regex}
+import utils.{attempt, generate_regex, replace_with_regex}
 import gleam/int
 
 pub type Socket =
